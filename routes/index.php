@@ -141,60 +141,45 @@ class Route{
                     $parts = explode('@', $callback);
                     $controllerName = $parts[0];
                     $methodName = $parts[1];
-                    // $namespace = 'YourNamespace\\' . $controllerName;
                     $controller = new $controllerName();
                     $result = [];
-                    // if (class_exists($namespace)) {
-                    //     $controller = new $namespace();
-                        // Check if the method exists within the class
-                        // if (method_exists($controller, $methodName)) {
-                            if($methodName == 'handleProviderCallback'){
-                                $result = call_user_func_array([$controller, $methodName], [$requestData,  $_SERVER['REQUEST_URI'], $_GET]);
-                            }else if(($methodName == 'getChangePass' || $methodName == 'verifyEmail')){
-                                $result = call_user_func_array([$controller, $methodName], [$requestData,  $_SERVER['REQUEST_URI'], $method, $_GET]);
-                            }else{
-                                $result = call_user_func_array([$controller, $methodName], [$requestData,  $_SERVER['REQUEST_URI']]);
-                            }
-                            // echo $result;
-                            // var_dump($result);
-                            if($result['status'] == 'error'){ 
+                    if($methodName == 'handleProviderCallback'){
+                        $result = call_user_func_array([$controller, $methodName], [$requestData,  $_SERVER['REQUEST_URI'], $_GET]);
+                    }else if(($methodName == 'getChangePass' || $methodName == 'verifyEmail')){
+                        $result = call_user_func_array([$controller, $methodName], [$requestData,  $_SERVER['REQUEST_URI'], $method, $_GET]);
+                    }else{
+                        $result = call_user_func_array([$controller, $methodName], [$requestData,  $_SERVER['REQUEST_URI']]);
+                    }
+                    // echo $result;
+                    // var_dump($result);
+                    if($result['status'] == 'error'){ 
+                        header('Content-Type: application/json');
+                        http_response_code(!empty($result['code']) ? $result['code'] : 400);
+                        unset($result['code']);
+                        echo json_encode($result);
+                        exit();
+                    }else{
+                        if(isset($result['content'])){
+                            if($result['content'] == 'application/json'){
                                 header('Content-Type: application/json');
-                                http_response_code(!empty($result['code']) ? $result['code'] : 400);
                                 unset($result['code']);
                                 echo json_encode($result);
                                 exit();
+                            }else if($result['content'] == 'text/html'){
+                                echo $result['data'];
+                                exit();
                             }else{
-                                if(isset($result['content'])){
-                                    if($result['content'] == 'application/json'){
-                                        header('Content-Type: application/json');
-                                        unset($result['code']);
-                                        echo json_encode($result);
-                                        exit();
-                                    }else if($result['content'] == 'text/html'){
-                                        echo $result['data'];
-                                        exit();
-                                    }else{
-                                        echo $result['data'];
-                                        exit();
-                                    }
-                                }else{
-                                    //handle json
-                                    header('Content-Type: application/json');
-                                    unset($result['code']);
-                                    echo json_encode($result);
-                                    exit();
-                                }
+                                echo $result['data'];
+                                exit();
                             }
-                    //     }else{
-                    //         http_response_code(404);
-                    //         include('view/page/PageNotFound.php');
-                    //         exit();
-                    //     }
-                    // }else{
-                    //     http_response_code(404);
-                    //     include('view/page/PageNotFound.php');
-                    //     exit();
-                    // }
+                        }else{
+                            //handle json
+                            header('Content-Type: application/json');
+                            unset($result['code']);
+                            echo json_encode($result);
+                            exit();
+                        }
+                    }
                 }
             }
         }

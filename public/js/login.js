@@ -37,9 +37,9 @@ loginForm.onsubmit = function(event){
         if (xhr.readyState == XMLHttpRequest.DONE) {
             if (xhr.status === 200) {
                 closeLoading();
+                console.log(xhr.responseText.data);
                 var response = JSON.parse(xhr.responseText);
-                // showGreenPopup(response, 'dashboard');
-                showGreenPopup(response);
+                showGreenPopup(response, 'dashboard');
             } else {
                 closeLoading();
                 var response = JSON.parse(xhr.responseText);
